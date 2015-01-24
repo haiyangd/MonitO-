@@ -1,7 +1,10 @@
 {
   "ip": "192.168.1.1",
+  
   "key": "12345",
+
   "server": "http://127.0.0.1:90/post",
+
   "services" : [
     "apache2",
     "mysql",
