@@ -5,7 +5,7 @@
 ############ ###########################
 
 _author_ = 'Nitheesh CS'
-_email_  = 'nitheesh@linuxpanda.com'
+_email_  = 'nitheesh007@gmail.com'
 
 import sys
 import json

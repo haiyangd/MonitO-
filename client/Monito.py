@@ -5,7 +5,7 @@
 ################# #####################
 
 _author_ = 'Nitheesh CS'
-_email_  = 'nitheesh@linuxpanda.com'
+_email_  = 'nitheesh.cs007@gmail.com'
 
 import re
 import time
