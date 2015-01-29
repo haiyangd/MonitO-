@@ -23,8 +23,8 @@ clients = json.load(json_config)
 @app.route('/')
 def index():
   print "Welcome"
-  # return render_template('index.html')
-  return None
+  return render_template('index.html')
+  #return None
 
 @app.route('/post', methods = ['POST'])
 def post():
@@ -52,5 +52,5 @@ def post():
 if __name__ == '__main__':
   app.run(
       host = "127.0.0.1",
-      port = 90
+      port = 8888
   )
