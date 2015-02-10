@@ -1,0 +1,102 @@
+h1 {
+	font-size : 25px;	
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    text-align: center; 
+}
+
+.centered {
+    margin: 0 auto;
+    width: 60%;
+}
+
+.apache th {
+	color:white;
+	font-size: 18px;
+	padding: 5px;
+	background-color: rgb(190, 14, 14);
+}
+
+#table-apache-con td { 
+	color: black; 
+	padding: 15px;
+	background-color: yellow;
+}
+
+#table-apache-con td:nth-child(2) { 
+	color: black; 
+	background-color: green;
+}
+
+#table-service td {
+	padding: 8px;
+}
+
+/* resets */
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.wrapper {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 100%;
+  background-color: #fff;
+}
+
+/* grid */
+.row1 {
+  margin: 0 -10px;
+  margin-bottom: 20px;
+}
+.row1:last-child {
+  margin-bottom: 0;
+}
+[class*="col-"] {
+  padding: 10px;
+}
+
+@media all and ( min-width: 600px ) {
+  
+  .grid-table {
+    float: left;
+    width: 25%;
+    padding: 5px;
+  }
+  .grid-table:nth-child(4n+1) {
+    clear: both;
+  }
+  
+}
+
+@media all and ( min-width: 960px ) {
+  .grid-table {
+    width: 32%;
+    padding: 5px;
+  }
+  .grid-table:nth-child(4n+1) {
+    clear: none;
+  }
+}
+
+.apache {
+  overflow: scroll;
+  height: 316px;
+}    
+
+.apache th {
+  color:white;
+  font-size: 18px;
+  padding: 5px;
+  background-color: rgb(190, 14, 14);
+}

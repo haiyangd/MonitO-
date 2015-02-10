@@ -14,6 +14,9 @@ import logging
 import requests
 import multiprocessing
 import subprocess, sys, os
+from operator import itemgetter
+from collections import OrderedDict
+
 
 try:
     unicode = unicode
@@ -287,7 +290,7 @@ def get_mysql_status(status):
 
 def get_apache_connections():
     command = "sudo netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | \
-               cut -d: -f1 | sort | uniq -c | sort -n | awk '{$3=$4=\"\"; print $0}'"
+               cut -d: -f1 | sort | uniq -c | sort -r -n | awk '{$3=$4=\"\"; print $0}'"
     p = subprocess.Popen(command, shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
@@ -299,6 +302,9 @@ def get_apache_connections():
         dic[_ip] = _con
       except ValueError:
         pass
+    dic = dict((k, v) for k, v in dic.iteritems() if v) 
+    # print sorted(dic.iteritems(), key=itemgetter(1), reverse=True) 
+    # print sorted(dic.values(), key=int, reverse=True)
     return dic
 
 def post_data_to_server(_data, server_uri):
@@ -316,20 +322,19 @@ def main():
   json_config=open('config.json')
   config = json.load(json_config)
 
-  for service in config['services']:
-    get_service_status(status, service)
-
-  status['apache_conns'] = get_apache_connections()
-
   server_uri = config['server']
-  data = get_data()
-  data['key'] = config['key']
-  data['ServerIP'] = config['ip']
-  data['ServiceStatus'] = status
+  
+  while True:
+    data = get_data()
+    for service in config['services']:
+      get_service_status(status, service)
+    data['apache_conns'] = get_apache_connections()
+    data['key'] = config['key']
+    data['ServerIP'] = config['ip']
+    data['ServiceStatus'] = status
 
-  # print json.dumps(data)
-
-  post_data_to_server(data, server_uri)
+    post_data_to_server(data, server_uri)
+    time.sleep(10)
 
 if __name__ == '__main__':
   main()

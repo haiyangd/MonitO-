@@ -1,0 +1,72 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>MonitO</title>
+	</head>	
+
+	<script type="text/JavaScript">
+	function timedRefresh(timeoutPeriod) {
+		setTimeout("location.reload(true);",timeoutPeriod);
+	}
+	</script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script type=text/javascript src="{{ url_for('static', filename='js/jquery.tablesorter.js') }}"></script>
+	<script type=text/javascript src="{{ url_for('static', filename='js/monit.js') }}"></script>
+	<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/svg.jquery.js"></script>
+	<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/pygal-tooltips.js"></script>	
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css" media ="screen"/>
+	<!-- 	<body onload="JavaScript:timedRefresh(8000);"> -->
+	<body>
+		<div class="centered">
+			<h1>
+		  	A Linux Monitoring App
+		  </h1>	
+		</div>
+		<div id="main">
+			<div class="wrapper">
+				<div class="row1 clearfix">
+
+					<div class="line-chart grid-table" id="line_chart">
+						{{ mem_chart|safe }}
+					</div>
+
+					<div class="chart1 grid-table">
+						{{ pie_crt|safe }}
+					</div>	
+
+					<div class="apache grid-table">
+						<table id="table-apache-con" border="0" style="width:100%">
+							<thead> 
+								<tr><th colspan="2"> Apache Connections </th></tr>
+								<tr> <th> IP </th> <th> No.</th> </tr>
+							</thead>
+							<tbody> 
+								{% for service, status in data['apache_conns'].iteritems() %}
+									<tr> <td> {{ service }} </td> <td> {{ status }} </td> </tr>
+					    	{% endfor %}	
+				    	</tbody>
+			    	</table>
+					</div>	
+
+				</div>
+				<div class="row2 clearfix">
+
+					<div class="service-status grid-table">
+						<table id="table-service" border="0" style="width:100%">
+							{% for service, status in data['ServiceStatus'].iteritems() %}
+								<tr> 
+								<col style="background-color: #6374AB; color: #ffffff;width: 10em" />
+								<td> {{ service }} </td> <td> {{ status }} </td> </tr>
+							{% endfor %}	
+						</table>
+					</div>		
+
+					<div class="line-chart grid-table">
+						{{ line_chart|safe }}
+					</div>
+						
+				</div>
+			</div>		
+		</div>	
+	</body>
+</html>

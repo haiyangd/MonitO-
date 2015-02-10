@@ -3,7 +3,7 @@
   
   "key": "12345",
 
-  "server": "http://127.0.0.1:90/post",
+  "server": "http://127.0.0.1:8888/post",
 
   "services" : [
     "apache2",
