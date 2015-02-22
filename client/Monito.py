@@ -7,16 +7,28 @@
 _author_ = 'Nitheesh CS'
 _email_  = 'nitheesh.cs007@gmail.com'
 
+_sent_mail = False
+
 import re
 import time
 import json
+import urllib2
+import smtplib
 import logging
 import requests
+import email.utils
 import multiprocessing
 import subprocess, sys, os
+from termcolor import cprint
 from operator import itemgetter
 from collections import OrderedDict
+from email.mime.text import MIMEText
 
+global sender
+global receivers
+
+sender = 'Monito Admin <admin@linuxpanda.com>'
+receivers = ['nitheesh.cs@powercms.in']
 
 try:
     unicode = unicode
@@ -40,6 +52,7 @@ def get_data():
         'loadAvg15Min': 0,  #load average 15 min
         'cpuUsage': [],  #usage distribution for each cpu
         'memUsage': {},  #memory usage 
+        'diskUsage': "",
         'networkReads': [],  #network reads per second for each interface
         'networkWrites': [],  #network writes per second for each interface
         'diskReads': [],  #disk reads per second for each disk
@@ -49,7 +62,10 @@ def get_data():
 
     #metrics that doesnt need sampling
     data['loadAvg1Min'], data['loadAvg5Min'], data['loadAvg15Min'] = get_load_avg()  #get load avg
-    data['memUsage'].update(get_mem_usage())  #memory usage
+    #data['memUsage'].update(get_mem_usage())  #memory usage
+    data['memUsage'].update(get_memory_usage())
+
+    data['diskUsage'] = get_disk_usage()
     
     #metrics that needs sampling
     #they are written as a generator so that we can sleep before collection again
@@ -287,6 +303,30 @@ def get_mysql_status(status):
                 stderr=subprocess.STDOUT)
     status['mysql'] = p.communicate()[0].strip('\n')
 
+def get_memory_usage():
+    command1 = "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+    command2 = "free | grep Mem | awk '{print $4/$2 * 100.0}'"
+    p = subprocess.Popen(command1, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+    used = p.communicate()[0].strip('\n')    
+    p = subprocess.Popen(command2, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+    free = p.communicate()[0].strip('\n')
+
+    return {
+        'free': free,
+        'used': used
+    }
+
+def get_disk_usage():
+    command = "df -hl | awk '/^\/dev\/sd[ab]/ { sum+=$5 } END { print sum }'"
+    p = subprocess.Popen(command, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+    disk_used = p.communicate()[0].strip('\n')    
+    return disk_used
 
 def get_apache_connections():
     command = "sudo netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | \
@@ -308,33 +348,86 @@ def get_apache_connections():
     return dic
 
 def post_data_to_server(_data, server_uri):
-  print "Connecting to server.."
+  cprint ("Connecting to server..", "yellow", attrs=['bold'])
   headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-  req = requests.post(server_uri, data=json.dumps(_data), headers=headers)
-  if req.status_code == 200:
-    print "Data sent successfully!"
-  else:
-    print req.text
-  
+  try:
+    req = requests.post(server_uri, data=json.dumps(_data), headers=headers)
+    if req.status_code == 200:
+      cprint ("Data sent successfully!", "white")
+      return True
+    else:
+      print req.text
+  except:
+    cprint ("Waiting for the server to respond!", 'red')
+    return False  
 
 def main():
   status = {}   
   json_config=open('config.json')
   config = json.load(json_config)
-
   server_uri = config['server']
-  
-  while True:
-    data = get_data()
-    for service in config['services']:
-      get_service_status(status, service)
-    data['apache_conns'] = get_apache_connections()
-    data['key'] = config['key']
-    data['ServerIP'] = config['ip']
-    data['ServiceStatus'] = status
+  count = 0
+  email_sent = False
+  server_check_interval = 5
 
-    post_data_to_server(data, server_uri)
+  server_reachable = check_server_conn(server_check_interval, config['server_ip'])
+
+  while True:
+    if server_reachable:
+      data = get_data()
+      for service in config['services']:
+        get_service_status(status, service)
+      data['apache_conns'] = get_apache_connections()
+      data['key'] = config['key']
+      data['ServerIP'] = config['ip']
+      data['ServiceStatus'] = status
+
+      sent_success = post_data_to_server(data, server_uri)
+
+      if not sent_success:
+        server_reachable = False
+        message = "Server not reachable..."
+        # Don't spam
+        if not email_sent:
+          if _sent_mail:
+            email_sent = sent_email_alert(message)
+        else:
+          count = count + 1
+          # Sent reminder
+          if count == 3:
+            email_sent = False
+            count = 0
+    else:
+      server_reachable = check_server_conn(server_check_interval, config['server_ip'])
+
     time.sleep(10)
+
+def check_server_conn(interval, server):
+    try:
+        response = urllib2.urlopen(server,timeout=1)
+        return True
+    except urllib2.URLError as err: 
+      cprint ("No connection to the server!", 'red')
+      pass
+    return False
+
+def listToStr(lst):
+    """This method makes comma separated list item string"""
+    return ','.join(lst)
+
+def sent_email_alert(message):
+  msg = "This is body"
+  msg_header = "From: " + sender + "\n" + \
+               "To: " + listToStr(receivers) + "\n" + \
+               "Subject: " + message + "\n"
+  msg_body =  msg_header + msg
+  try:
+     smtpObj = smtplib.SMTP('localhost')
+     smtpObj.sendmail(sender, receivers, msg_body)
+     cprint ("Successfully sent email", "white")
+  except:
+     cprint ("Error: unable to send email","red")
+  return True
 
 if __name__ == '__main__':
   main()

@@ -1,11 +1,6 @@
-$(document).ready(function() 
-  { 
-    $("#table-apache-con").tablesorter(); 
-
-/*    function show_data()
-    {
-     $("#line_chart").load(location.href + " #line_chart");
-    }
-    setInterval('show_data()', 5000);        */
-  } 
-); 
+$(document).ready(function () {
+    setInterval(function () {
+      $("#load_chart").load('/data/192.168.1.1?graph=load'); 
+      $("#mem_chart").load('/data/192.168.1.1?graph=mem'); 
+    }, 10000);
+});

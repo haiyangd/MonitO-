@@ -1,0 +1,31 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>MonitO | Linux VPS Monitoring</title>
+	</head>	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script type=text/javascript src="{{ url_for('static', filename='js/monit.js') }}"></script>
+	<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/svg.jquery.js"></script>
+	<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/pygal-tooltips.js"></script>	
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css" media ="screen"/>
+	<!-- 	<body onload="JavaScript:timedRefresh(8000);"> -->
+	<body>
+		<div class="centered">
+			<h1>
+		  	A Linux Monitoring App
+		  </h1>	
+		</div>
+		<div id="main">
+			<div class="wrapper">
+				<div class="row1 clearfix">
+					{% for client, ip in clients.iteritems() %}
+						<a href={{ client }} > 
+							<div class="client-table">
+								{{ ip }}
+							</div>	
+						</a>
+					{% endfor %}
+			</div>		
+		</div>	
+	</body>
+</html>

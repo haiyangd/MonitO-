@@ -5,6 +5,8 @@
 
   "server": "http://127.0.0.1:8888/post",
 
+  "server_ip" : "http://127.0.0.1:8888",
+
   "services" : [
     "apache2",
     "mysql",
